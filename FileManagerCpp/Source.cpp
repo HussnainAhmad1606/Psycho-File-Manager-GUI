@@ -1,13 +1,18 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include "getLogicalDrives.h"
+
+
+#include <locale>
+#include <codecvt>
 class ClickableElement {
+    
 public:
-    ClickableElement(const sf::Texture& texture, const sf::Font& font, const std::string& text)
-        : sprite(texture), text(text, font), isClicked(false) {
+    ClickableElement(const sf::Texture& texture, const sf::Font& font, const std::string& text, float position)
+        : sprite(texture), text(text, font), isClicked(false)  {
         // Set up sprite and text
-        sprite.setPosition(sf::Vector2f(100, 100)); // Adjust the position as needed
-      
+        sprite.setPosition(sf::Vector2f(300, 300));
+
 
         // Set up bounding box for click detection
         boundingBox = sprite.getGlobalBounds();
@@ -48,17 +53,11 @@ int main() {
 
     // Loop through the data
     std::vector<DriveInfo> drives = getAllDrives();
-    for (const auto& drive : drives) {
-        std::wcout << drive.driveLetter << L":\\ ";
-        std::cout << drive.driveType << std::endl;
-    }
+    std::cout << "Test";
+    
 
- 
 
-    // Get desktop resolution
-    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
 
-    sf::RenderWindow window(desktopMode, "Psycho File Manager", sf::Style::Fullscreen);
 
     // Load texture and font
     sf::Texture texture;
@@ -72,10 +71,24 @@ int main() {
         // Handle error
         return EXIT_FAILURE;
     }
+    std::vector<ClickableElement> clickableElements;
 
-    
-    // Create a clickable element
-    ClickableElement clickableElement(texture, font, "Click me!");
+    float pos = 10;
+  
+
+    for (const auto& drive : drives) {
+        // Convert drive letter (wchar_t) to a wstring
+        std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+        std::string str = converter.to_bytes(drive.driveLetter);
+        // Create a ClickableElement using the correct constructor parameters
+        ClickableElement element(texture, font, str, pos);
+        clickableElements.emplace_back(element);
+        pos += 10.5;
+    }
+
+    sf::RenderWindow window(sf::VideoMode(800, 600), "Psycho File Manager");
+
+
 
     while (window.isOpen()) {
         sf::Event event;
@@ -85,20 +98,34 @@ int main() {
                 window.close();
                 break;
             case sf::Event::MouseButtonPressed:
-                if (clickableElement.isMouseOver(window)) {
-                    clickableElement.handleMouseClick();
+                for (auto& clickableElement : clickableElements) {
+                    if (clickableElement.isMouseOver(window)) {
+                        clickableElement.handleMouseClick();
+                    }
                 }
+                
                 break;
             case sf::Event::MouseButtonReleased:
-                clickableElement.handleMouseRelease();
+                for (auto& clickableElement : clickableElements) {
+                    clickableElement.handleMouseRelease();
+                }
+                
                 break;
+            case sf::Event::KeyPressed:
+                for (auto& clickableElement : clickableElements) {
+                std::cout << sf::Event::KeyPressed;
+                }
             }
         }
 
-        window.clear(sf::Color::White);
-
-        // Draw the clickable element
-        clickableElement.draw(window);
+        window.clear(sf::Color::Green);
+       
+        for (auto& element : clickableElements) {
+        
+            element.draw(window);
+        }
+      
+        
 
         window.display();
     }
