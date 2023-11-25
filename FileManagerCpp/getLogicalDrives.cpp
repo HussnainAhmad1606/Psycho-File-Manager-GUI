@@ -68,6 +68,8 @@ std::vector<DriveInfo> getAllDrives() {
             }
 
             std::wcout << L"\n";
+            driveList.push_back(info);
+
         }
         drives >>= 1;
     }

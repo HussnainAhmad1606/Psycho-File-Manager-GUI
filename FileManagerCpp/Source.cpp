@@ -11,7 +11,8 @@ public:
     ClickableElement(const sf::Texture& texture, const sf::Font& font, const std::string& text, float position)
         : sprite(texture), text(text, font), isClicked(false)  {
         // Set up sprite and text
-        sprite.setPosition(sf::Vector2f(300, 300));
+        sprite.setPosition(sf::Vector2f(position, 300));
+        
 
 
         // Set up bounding box for click detection
@@ -83,7 +84,7 @@ int main() {
         // Create a ClickableElement using the correct constructor parameters
         ClickableElement element(texture, font, str, pos);
         clickableElements.emplace_back(element);
-        pos += 10.5;
+        pos += 100;
     }
 
     sf::RenderWindow window(sf::VideoMode(800, 600), "Psycho File Manager");
@@ -111,18 +112,14 @@ int main() {
                 }
                 
                 break;
-            case sf::Event::KeyPressed:
-                for (auto& clickableElement : clickableElements) {
-                std::cout << sf::Event::KeyPressed;
-                }
             }
         }
 
-        window.clear(sf::Color::Green);
+        window.clear(sf::Color::White);
        
-        for (auto& element : clickableElements) {
+        for (auto& clickableElement : clickableElements) {
         
-            element.draw(window);
+            clickableElement.draw(window);
         }
       
         
