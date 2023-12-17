@@ -21,6 +21,9 @@
     <ClCompile Include="getLogicalDrives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="getFoldersFromPath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\Downloads\BizzyKart\thisPc.png">
@@ -29,6 +32,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="getLogicalDrives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="getFoldersFromPath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
