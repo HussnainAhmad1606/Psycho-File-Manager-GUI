@@ -3,12 +3,15 @@
 #include "getLogicalDrives.h"
 #include "getFoldersFromPath.h"
 #include "openFile.h"
+#include "aboutAlert.h"
+#include "newFolderInput.h"
 
 #include <locale>
 #include <codecvt>
+
 std::wstring currentDirectory = L"";
 class ClickableElement {
-    
+
 public:
     ClickableElement(const sf::Texture& texture, const sf::Font& font, const DriveInfo& driveInfo, float position, float positionY = 300)
         : sprite(texture), driveInfo(driveInfo), isClicked(false) {
@@ -26,13 +29,13 @@ public:
         std::string str = converter.to_bytes(driveInfo.driveLetter);
         if (currentDirectory.length() != 0) {
             std::string stri = str + driveInfo.driveType;
-        text.setString(stri.substr(0, 15)+"...");
+            text.setString(stri.substr(0, 15) + "...");
         }
         else {
 
-        text.setString(str+":/ "+driveInfo.driveType);
+            text.setString(str + ":/ " + driveInfo.driveType);
         }
-  
+
         text.setPosition(sf::Vector2f(position, positionY + 40)); // Adjust the position as needed
         text.setFillColor(sf::Color::Black);
     }
@@ -46,8 +49,11 @@ public:
         sf::Vector2f mousePosition = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         return boundingBox.contains(mousePosition);
     }
-
-    void handleMouseClick(sf::Texture &file, sf::Texture &normalDrive, sf::Texture& folder, sf::Font &font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
+    void singleClick() {
+        std::wcout << driveInfo.driveLetter << std::endl;
+        std::wcout << currentDirectory;
+    }
+    void handleMouseClick(sf::Texture& file, sf::Texture& normalDrive, sf::Texture& folder, sf::Font& font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
         std::cout << "Changed!";
         if (currentDirectory.length() == 0) {
             std::cout << "Zero\n";
@@ -59,12 +65,12 @@ public:
 
             std::cout << driveInfo.driveType;
         }
-        
+
         isClicked = true;
         std::vector<DriveInfo> folders;
         if (currentDirectory.length() == 0) {
-       folders = listFolders(driveInfo.driveLetter + L":");
-        currentDirectory = driveInfo.driveLetter;
+            folders = listFolders(driveInfo.driveLetter + L":");
+            currentDirectory = driveInfo.driveLetter;
 
 
         }
@@ -90,16 +96,16 @@ public:
                 folders = listFolders(currentDirectory);
             }
 
-          
-            
-        
-           
-              
-      
+
+
+
+
+
+
 
 
         }
-        if (driveInfo.isDirectory!=true) {
+        if (driveInfo.isDirectory != true) {
             std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
             std::string fileName = converter.to_bytes(driveInfo.driveLetter);
             std::string convertedDirectory = converter.to_bytes(currentDirectory);
@@ -116,7 +122,7 @@ public:
             // Create clickable elements for folders
 
             float folderPos = 10;
-            float positionY = 50;
+            float positionY = 150;
             for (int i = 0; i < static_cast<int>(folders.size()); ++i) {
                 if (i > 0 && i % maxFoldersToShow == 0) {
                     // Start a new row
@@ -147,7 +153,7 @@ public:
 
 
         }
-       
+
 
 
     }
@@ -261,7 +267,32 @@ int main() {
     sf::Text aboutOption("About", font, 15);
     aboutOption.setPosition(70, 10);
 
+    // Creating toolbar
+    sf::RectangleShape toolBar(sf::Vector2f(window.getSize().x, 60));
+    toolBar.setFillColor(sf::Color(255, 0, 0)); // Light gray color
+    toolBar.setPosition(0, 40);
+
+    
+
+    sf::Text cutText("Cut", font, 15);
+    cutText.setPosition(10, 60);
+    
+    sf::Text pasteText("Paste", font, 15);
+    pasteText.setPosition(70, 60);
+
+    sf::Text newFolder("New Folder", font, 15);
+    newFolder.setPosition(130, 60);
+
+    // For Handling double click
+    sf::Clock clickClock;
+    sf::Time clickCooldown = sf::milliseconds(900); // Adjust the time threshold for a double click
+    sf::Vector2i clickPosition;
+
     sf::Clock clock;
+
+    bool mouseClicked = false;
+
+
     while (window.isOpen()) {
         sf::Time elapsed = clock.restart();
         float scrollSpeed = 3000.0f;
@@ -273,17 +304,122 @@ int main() {
                 window.close();
                 break;
             case sf::Event::MouseButtonPressed:
-                for (auto& clickableElement : clickableElements) {
-                    if (clickableElement.isMouseOver(window)) {
-                        
-                        clickableElement.handleMouseClick(file, windowsDrive, folder, font,  clickableElements);
-                        
+                if (clickClock.getElapsedTime() < clickCooldown && clickPosition == sf::Mouse::getPosition(window)) {
+                    // Double-click detected
+                    std::cout << "Double Click!" << std::endl;
+                    // Add your double-click handling code here
+
+                    // Reset the clock and clear the position to prevent detecting more than one double-click
+                    clickClock.restart();
+                    clickPosition = sf::Vector2i(-1, -1);
+                    for (auto& clickableElement : clickableElements) {
+
+                        if (clickableElement.isMouseOver(window)) {
+
+                            clickableElement.handleMouseClick(file, windowsDrive, folder, font, clickableElements);
+
+                        }
                     }
                 }
+                else {
+                    sf::Vector2f mousePosition(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
+                    if (cutText.getGlobalBounds().contains(mousePosition)) {
+                        if (!mouseClicked) {
+                            std::cout << "Cut clicked!" << std::endl;
+                            // Add your cut handling code here
+                            mouseClicked = true;
+                        }
+                    }
+                    else if (pasteText.getGlobalBounds().contains(mousePosition)) {
+                        if (!mouseClicked) {
+                            std::cout << "Paste clicked!" << std::endl;
+                            // Add your paste handling code here
+                            mouseClicked = true;
+                        }
+                    }
+                    else if (aboutOption.getGlobalBounds().contains(mousePosition)) {
+                        if (!mouseClicked) {
+                            std::cout << "About Clicked!" << std::endl;
+                            showAlert();
+                            // Add your paste handling code here
+                            mouseClicked = true;
+                        }
+                    }
+                    else if (newFolder.getGlobalBounds().contains(mousePosition)) {
+                        if (!mouseClicked) {
+                            std::cout << "New Folder clicked!" << std::endl;
+                            // Add your new folder handling code here
+                            int maxFoldersToShow = 6;
+                            bool isCreate = inputFolderName(currentDirectory);
+                            if (isCreate) {
+                                // Folder is created
+                                std::vector<DriveInfo> updatedFolders = listFolders(currentDirectory);
+                                clickableElements.clear();
+                                // Create clickable elements for folders
+
+                                float folderPos = 10;
+                                float positionY = 150;
+                                for (int i = 0; i < static_cast<int>(updatedFolders.size()); ++i) {
+                                    if (i > 0 && i % maxFoldersToShow == 0) {
+                                        // Start a new row
+                                        positionY += 100; // Adjust based on your desired spacing between rows
+                                        folderPos = 10;
+                                    }
+
+                                    if (currentDirectory.length() != 0) {
+                                        if (updatedFolders[i].isDirectory) {
+                                            ClickableElement folderElement(folder, font, updatedFolders[i], folderPos, positionY);
+                                            clickableElements.emplace_back(folderElement);
+                                        }
+                                        else {
+                                            ClickableElement folderElement(file, font, updatedFolders[i], folderPos, positionY);
+                                            clickableElements.emplace_back(folderElement);
+
+                                        }
+
+                                    }
+                                    else {
+                                        ClickableElement folderElement(normalDrive, font, updatedFolders[i], folderPos, positionY);
+                                        clickableElements.emplace_back(folderElement);
+
+                                    }
+                                    folderPos += 130; // Adjust based on your window size and spacing
+                                }
+
+                            }
+                            mouseClicked = true;
+                        }
+                    }
+                    for (auto& clickableElement : clickableElements) {
+                      
+                       
+
+                        if (clickableElement.isMouseOver(window)) {
+
+                            clickableElement.singleClick();
+
+                        }
+                    }
+                    // Single click detected
+                    std::cout << "Single Click!" << std::endl;
+                    // Add your single-click handling code here
+
+                    // Record the click position
+                    clickPosition = sf::Mouse::getPosition(window);
+
+                    // Reset the clock for the next click
+                    clickClock.restart();
+
+
+                }
+                
+               
                 
                 break;
             case sf::Event::MouseButtonReleased:
+
                 for (auto& clickableElement : clickableElements) {
+                    mouseClicked = false;
                     clickableElement.handleMouseRelease();
                 }
                 
@@ -326,6 +462,10 @@ int main() {
         window.draw(menuBar);
         window.draw(fileOption);
         window.draw(aboutOption);
+        window.draw(toolBar);
+        window.draw(newFolder);
+        window.draw(cutText);
+        window.draw(pasteText);
        
         for (auto& clickableElement : clickableElements) {
         

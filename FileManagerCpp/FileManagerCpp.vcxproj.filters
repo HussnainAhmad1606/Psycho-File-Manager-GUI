@@ -27,6 +27,15 @@
     <ClCompile Include="openFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="aboutAlert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="newFolderInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="createNewFolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\Downloads\BizzyKart\thisPc.png">
@@ -41,6 +50,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="openFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aboutAlert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newFolderInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="createNewFolder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

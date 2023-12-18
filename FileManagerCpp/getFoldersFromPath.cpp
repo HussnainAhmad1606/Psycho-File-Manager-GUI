@@ -16,7 +16,7 @@ std::vector<DriveInfo> listFolders(const std::wstring& drivePath) {
         if (findFileData.dwFileAttributes) {
             if (wcscmp(findFileData.cFileName, L".") != 0 && wcscmp(findFileData.cFileName, L"..") != 0) {
                 DriveInfo info;
-                std::wcout << findFileData.cFileName << L"\n";
+                // std::wcout << findFileData.cFileName << L"\n";
                 info.driveLetter = findFileData.cFileName;
                 info.isDirectory = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 

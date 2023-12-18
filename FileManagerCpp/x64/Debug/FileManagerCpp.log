@@ -1,2 +1,20 @@
-﻿  openFile.cpp
+﻿  Source.cpp
+C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(259,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
+C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(271,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+          with
+          [
+              T=unsigned int
+          ]
+          and
+          [
+              T=float
+          ]
   FileManagerCpp.vcxproj -> C:\Users\Psycho\source\repos\FileManagerCpp\x64\Debug\FileManagerCpp.exe
