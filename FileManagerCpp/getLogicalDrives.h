@@ -7,6 +7,7 @@
 struct DriveInfo {
     std::wstring driveLetter;
     std::string driveType;
+    bool isDirectory;
 };
 bool isDVDDrive(wchar_t driveLetter);
 

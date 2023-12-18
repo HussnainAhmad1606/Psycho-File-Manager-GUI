@@ -13,11 +13,14 @@ std::vector<DriveInfo> listFolders(const std::wstring& drivePath) {
     }
 
     do {
-        if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        if (findFileData.dwFileAttributes) {
             if (wcscmp(findFileData.cFileName, L".") != 0 && wcscmp(findFileData.cFileName, L"..") != 0) {
                 DriveInfo info;
                 std::wcout << findFileData.cFileName << L"\n";
                 info.driveLetter = findFileData.cFileName;
+                info.isDirectory = (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+
                 driveList.push_back(info);
 
             }
@@ -29,10 +32,10 @@ std::vector<DriveInfo> listFolders(const std::wstring& drivePath) {
 }
 
 //int main() {
-//    // Specify the drive letter (e.g., C:)
-//    std::wstring driveLetter = L"D:";
+    // Specify the drive letter (e.g., C:)
+//    std::wstring driveLetter = L"D:\\Entertainment\\Forza Horizon\\Forza Horizon 4 [FitGirl Repack]";
+
+//    listFolders(driveLetter);
 //
-//    listFoldersInDrive(driveLetter);
-//
-//    return 0;
+//   return 0;
 //}

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "getLogicalDrives.h"
 #include "getFoldersFromPath.h"
+#include "openFile.h"
 
 #include <locale>
 #include <codecvt>
@@ -23,8 +24,15 @@ public:
 
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         std::string str = converter.to_bytes(driveInfo.driveLetter);
-  
+        if (currentDirectory.length() != 0) {
+            std::string stri = str + driveInfo.driveType;
+        text.setString(stri.substr(0, 15)+"...");
+        }
+        else {
+
         text.setString(str+":/ "+driveInfo.driveType);
+        }
+  
         text.setPosition(sf::Vector2f(position, positionY + 40)); // Adjust the position as needed
         text.setFillColor(sf::Color::Black);
     }
@@ -39,7 +47,7 @@ public:
         return boundingBox.contains(mousePosition);
     }
 
-    void handleMouseClick(sf::Texture &normalDrive, sf::Font &font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
+    void handleMouseClick(sf::Texture &file, sf::Texture &normalDrive, sf::Texture& folder, sf::Font &font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
         std::cout << "Changed!";
         if (currentDirectory.length() == 0) {
             std::cout << "Zero\n";
@@ -63,46 +71,82 @@ public:
         else {
 
             size_t position = currentDirectory.find(L':');
+            if (driveInfo.isDirectory) {
+                if (position != std::wstring::npos) {
 
-            if (position != std::wstring::npos) {
-                currentDirectory = currentDirectory + L"\\" + driveInfo.driveLetter;
-                std::wcout << "'W' found at position: " << position << std::endl;
-            }
-            else {
-                currentDirectory = currentDirectory + L":\\" + driveInfo.driveLetter;
+                    currentDirectory = currentDirectory + L"\\" + driveInfo.driveLetter;
+                    std::wcout << "'W' found at position: " << position << std::endl;
 
-                std::wcout << "'W' not found in the wstring." << std::endl;
+                }
+                else {
+
+                    currentDirectory = currentDirectory + L":\\" + driveInfo.driveLetter;
+
+                    std::wcout << "'W' not found in the wstring." << std::endl;
+
+
+                }
+                std::wcout << currentDirectory;
+                folders = listFolders(currentDirectory);
             }
+
+          
             
         
-        std::wcout << currentDirectory;
-        folders = listFolders(currentDirectory);
+           
+              
+      
 
 
         }
+        if (driveInfo.isDirectory!=true) {
+            std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+            std::string fileName = converter.to_bytes(driveInfo.driveLetter);
+            std::string convertedDirectory = converter.to_bytes(currentDirectory);
 
+            openFile(fileName, convertedDirectory);
+
+        }
         std::cout << "Clicked Drive! -> " << driveInfo.driveType << std::endl;
         std::wcout << "Clicked! -> " << driveInfo.driveLetter << std::endl;
 
-        clickableElements.clear();
-        // Create clickable elements for folders
-      
-        float folderPos = 10;
-        float positionY = 50;
-        for (int i = 0; i < static_cast<int>(folders.size()); ++i) {
-            if (i > 0 && i % maxFoldersToShow == 0) {
-                // Start a new row
-                positionY += 100; // Adjust based on your desired spacing between rows
-                folderPos = 10;
+        if (driveInfo.isDirectory) {
+            std::cout << "Updating contents";
+            clickableElements.clear();
+            // Create clickable elements for folders
+
+            float folderPos = 10;
+            float positionY = 50;
+            for (int i = 0; i < static_cast<int>(folders.size()); ++i) {
+                if (i > 0 && i % maxFoldersToShow == 0) {
+                    // Start a new row
+                    positionY += 100; // Adjust based on your desired spacing between rows
+                    folderPos = 10;
+                }
+
+                if (currentDirectory.length() != 0) {
+                    if (folders[i].isDirectory) {
+                        ClickableElement folderElement(folder, font, folders[i], folderPos, positionY);
+                        clickableElements.emplace_back(folderElement);
+                    }
+                    else {
+                        ClickableElement folderElement(file, font, folders[i], folderPos, positionY);
+                        clickableElements.emplace_back(folderElement);
+
+                    }
+
+                }
+                else {
+                    ClickableElement folderElement(normalDrive, font, folders[i], folderPos, positionY);
+                    clickableElements.emplace_back(folderElement);
+
+                }
+                folderPos += 130; // Adjust based on your window size and spacing
             }
 
-            ClickableElement folderElement(normalDrive, font, folders[i], folderPos, positionY);
-            clickableElements.emplace_back(folderElement);
-            folderPos += 130; // Adjust based on your window size and spacing
+
+
         }
-
-        
-
        
 
 
@@ -142,13 +186,18 @@ int main() {
     sf::Texture normalDrive;
     sf::Texture windowsDrive;
     sf::Texture folder;
+    sf::Texture file;
 
     texture.setSmooth(false);
     normalDrive.setSmooth(false);
     windowsDrive.setSmooth(false);
     folder.setSmooth(true);
+    file.setSmooth(true);
 
-    if (!texture.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/thisPc.png")) {
+    if (!file.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/file.png")) {
+        // Handle error
+        return EXIT_FAILURE;
+    }if (!texture.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/thisPc.png")) {
         // Handle error
         return EXIT_FAILURE;
     }
@@ -196,9 +245,27 @@ int main() {
     }
     sf::RenderWindow window(sf::VideoMode(800, 600), "Psycho File Manager");
 
+    // Set up a view for scrolling
+    sf::View view(sf::FloatRect(0, 0, 800, 600));
+    window.setView(view);
 
+    // Create menu bar background
+    sf::RectangleShape menuBar(sf::Vector2f(window.getSize().x, 40));
+    menuBar.setFillColor(sf::Color(200, 200, 200)); // Light gray color
+    menuBar.setPosition(0, 0);
 
+    // Create menu options
+    sf::Text fileOption("File", font, 15);
+    fileOption.setPosition(10, 10);
+
+    sf::Text aboutOption("About", font, 15);
+    aboutOption.setPosition(70, 10);
+
+    sf::Clock clock;
     while (window.isOpen()) {
+        sf::Time elapsed = clock.restart();
+        float scrollSpeed = 3000.0f;
+        float scrollDistance = scrollSpeed * elapsed.asSeconds();
         sf::Event event;
         while (window.pollEvent(event)) {
             switch (event.type) {
@@ -209,7 +276,7 @@ int main() {
                 for (auto& clickableElement : clickableElements) {
                     if (clickableElement.isMouseOver(window)) {
                         
-                        clickableElement.handleMouseClick(folder, font,  clickableElements);
+                        clickableElement.handleMouseClick(file, windowsDrive, folder, font,  clickableElements);
                         
                     }
                 }
@@ -221,10 +288,44 @@ int main() {
                 }
                 
                 break;
+                case sf::Event::MouseWheelScrolled:
+                    //std::cout << "wheel movement: " << event.mouseWheel.delta << std::endl;
+                    if (event.mouseWheelScroll.delta > 0) {
+                        view.move(0, -scrollDistance);
+
+                        // Scrolled up
+                        // Add your code here
+                    }
+                    // Check if the scroll wheel is scrolled down
+                    else if (event.mouseWheelScroll.delta < 0) {
+                        view.move(0, scrollDistance);
+
+
+                        // Scrolled down
+                        // Add your code here
+                    }
+
             }
         }
 
+
+       
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+            std::cout << "Scrolling up";
+            view.move(0, -scrollDistance);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+            std::cout << "Scrolling down";
+            view.move(0, scrollDistance);
+        }
+
+        
+
         window.clear(sf::Color::White);
+        window.draw(menuBar);
+        window.draw(fileOption);
+        window.draw(aboutOption);
        
         for (auto& clickableElement : clickableElements) {
         
@@ -232,7 +333,7 @@ int main() {
         }
       
         
-
+        window.setView(view);
         window.display();
     }
 
