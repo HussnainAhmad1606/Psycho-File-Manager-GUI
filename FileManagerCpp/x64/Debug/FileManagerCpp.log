@@ -1,5 +1,5 @@
 ﻿  Source.cpp
-C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(259,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(344,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=unsigned int
@@ -8,7 +8,7 @@ C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(259,61): w
           [
               T=float
           ]
-C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(271,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
+C:\Users\Psycho\source\repos\FileManagerCpp\FileManagerCpp\Source.cpp(356,61): warning C4244: 'argument': conversion from 'T' to 'T', possible loss of data
           with
           [
               T=unsigned int

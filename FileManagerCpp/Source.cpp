@@ -9,7 +9,12 @@
 #include <locale>
 #include <codecvt>
 
+#include <stack>
+std::stack<std::wstring> directories;
 std::wstring currentDirectory = L"";
+
+
+
 class ClickableElement {
 
 public:
@@ -72,6 +77,9 @@ public:
             folders = listFolders(driveInfo.driveLetter + L":");
             currentDirectory = driveInfo.driveLetter;
 
+            // Pushing in stack
+            directories.push(driveInfo.driveLetter);
+
 
         }
         else {
@@ -82,13 +90,14 @@ public:
 
                     currentDirectory = currentDirectory + L"\\" + driveInfo.driveLetter;
                     std::wcout << "'W' found at position: " << position << std::endl;
-
+                    directories.push(currentDirectory);
                 }
                 else {
 
                     currentDirectory = currentDirectory + L":\\" + driveInfo.driveLetter;
 
                     std::wcout << "'W' not found in the wstring." << std::endl;
+                    directories.push(currentDirectory);
 
 
                 }
@@ -122,7 +131,7 @@ public:
             // Create clickable elements for folders
 
             float folderPos = 10;
-            float positionY = 150;
+            float positionY = 200;
             for (int i = 0; i < static_cast<int>(folders.size()); ++i) {
                 if (i > 0 && i % maxFoldersToShow == 0) {
                     // Start a new row
@@ -176,6 +185,74 @@ private:
 
 };
 
+
+// If user back to home directory, draws all the drives
+void loadHomeDirectory(sf::Texture& normalDrive, sf::Texture& windowsDirve, sf::Font& font, std::vector<ClickableElement>& clickableElements) {
+    std::vector<DriveInfo> drives = getAllDrives();
+
+
+    float pos = 10;
+
+    clickableElements.clear();
+
+    for (const auto& drive : drives) {
+        // Create a ClickableElement using the correct constructor parameters
+
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+        std::string str = converter.to_bytes(drive.driveLetter);
+        if (str == "C") {
+            {
+                ClickableElement element(windowsDirve, font, drive, pos);
+                clickableElements.emplace_back(element);
+            }
+        }
+        else {
+            {
+                ClickableElement element(normalDrive, font, drive, pos);
+                clickableElements.emplace_back(element);
+            }
+        }
+        pos += 100; // Adjust this increment based on your window size and desired spacing
+    }
+}
+
+
+// Function to load all of the files again
+void refreshDirectory(std::wstring dir, sf::Texture& file, sf::Texture& normalDrive, sf::Texture& folder, sf::Font& font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
+    // Folder is created
+    std::vector<DriveInfo> updatedFolders = listFolders(dir);
+    clickableElements.clear();
+
+    float folderPos = 10;
+    float positionY = 150;
+    for (int i = 0; i < static_cast<int>(updatedFolders.size()); ++i) {
+        if (i > 0 && i % maxFoldersToShow == 0) {
+            // Start a new row
+            positionY += 100; // Adjust based on your desired spacing between rows
+            folderPos = 10;
+        }
+
+        if (currentDirectory.length() != 0) {
+            if (updatedFolders[i].isDirectory) {
+                ClickableElement folderElement(folder, font, updatedFolders[i], folderPos, positionY);
+                clickableElements.emplace_back(folderElement);
+            }
+            else {
+                ClickableElement folderElement(file, font, updatedFolders[i], folderPos, positionY);
+                clickableElements.emplace_back(folderElement);
+
+            }
+
+        }
+        else {
+            ClickableElement folderElement(normalDrive, font, updatedFolders[i], folderPos, positionY);
+            clickableElements.emplace_back(folderElement);
+
+        }
+        folderPos += 130; // Adjust based on your window size and spacing
+    }
+
+}
 int main() {
     // Looping and get all drives data
 
@@ -193,6 +270,7 @@ int main() {
     sf::Texture windowsDrive;
     sf::Texture folder;
     sf::Texture file;
+    sf::Texture backButton;
 
     texture.setSmooth(false);
     normalDrive.setSmooth(false);
@@ -203,7 +281,14 @@ int main() {
     if (!file.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/file.png")) {
         // Handle error
         return EXIT_FAILURE;
-    }if (!texture.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/thisPc.png")) {
+    }
+
+    if (!backButton.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/backButton.png")) {
+        // Handle error
+        return EXIT_FAILURE;
+    }
+    
+    if (!texture.loadFromFile("C:/Users/Psycho/Downloads/BizzyKart/thisPc.png")) {
         // Handle error
         return EXIT_FAILURE;
     }
@@ -273,15 +358,26 @@ int main() {
     toolBar.setPosition(0, 40);
 
     
-
+    
     sf::Text cutText("Cut", font, 15);
-    cutText.setPosition(10, 60);
+    cutText.setPosition(70, 60);
     
     sf::Text pasteText("Paste", font, 15);
-    pasteText.setPosition(70, 60);
+    pasteText.setPosition(130, 60);
 
     sf::Text newFolder("New Folder", font, 15);
-    newFolder.setPosition(130, 60);
+    newFolder.setPosition(190, 60);
+    
+
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+    std::string currentDire = converter.to_bytes(currentDirectory);
+    sf::Text currentDirectoryText(currentDire, font, 15);
+    currentDirectoryText.setFillColor(sf::Color::Black);
+    currentDirectoryText.setPosition(280, 150);
+
+    sf::RectangleShape backButtonText(sf::Vector2f(20, 20));
+    backButtonText.setTexture(&backButton); // Set the texture
+    backButtonText.setPosition(10, 60);
 
     // For Handling double click
     sf::Clock clickClock;
@@ -328,6 +424,39 @@ int main() {
                             std::cout << "Cut clicked!" << std::endl;
                             // Add your cut handling code here
                             mouseClicked = true;
+                        }
+                    }
+                    else if (backButtonText.getGlobalBounds().contains(mousePosition)) {
+                        if (!mouseClicked) {
+                            std::cout << "Back Button clicked!" << std::endl;
+                            // Add your cut handling code here
+                            std::cout << "Stack: " << std::endl;
+                           
+                            mouseClicked = true;
+
+                            if (directories.empty()) {
+                                std::cout << "HOME";
+
+                                loadHomeDirectory(normalDrive, windowsDrive,font, clickableElements);
+                                currentDirectory = L"";
+                               }
+                            else {
+                                    directories.pop();
+                                if (!directories.empty()) {
+                                    std::wstring dir = directories.top();
+                                    std::wcout << std::endl << dir;
+                                    if (dir.length() == 1) {
+                                        std::wstring temp = dir + L":";
+                                        currentDirectory = temp;
+                                        refreshDirectory(temp, file, windowsDrive, folder, font, clickableElements);
+                                    }
+                                    else {
+                                        currentDirectory = dir;
+                                        refreshDirectory(dir, file, windowsDrive, folder, font, clickableElements);
+                                    }
+                                }
+                            }
+
                         }
                     }
                     else if (pasteText.getGlobalBounds().contains(mousePosition)) {
@@ -466,6 +595,8 @@ int main() {
         window.draw(newFolder);
         window.draw(cutText);
         window.draw(pasteText);
+        window.draw(backButtonText);
+        window.draw(currentDirectoryText);
        
         for (auto& clickableElement : clickableElements) {
         
