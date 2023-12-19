@@ -1,20 +1,23 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+
 #include "getLogicalDrives.h"
 #include "getFoldersFromPath.h"
 #include "openFile.h"
 #include "aboutAlert.h"
 #include "newFolderInput.h"
+#include "propertiesAlert.h"
+#include "copyFiles.h"
+
 
 #include <locale>
 #include <codecvt>
-
+#include <queue>   
 #include <stack>
 std::stack<std::wstring> directories;
 std::wstring currentDirectory = L"";
-
-
-
+std::wstring currentSelection = L"";
+std::queue<std::wstring> copiedFilesData;
 class ClickableElement {
 
 public:
@@ -38,7 +41,7 @@ public:
         }
         else {
 
-            text.setString(str + ":/ " + driveInfo.driveType);
+            text.setString(str + " :/ " + driveInfo.driveType);
         }
 
         text.setPosition(sf::Vector2f(position, positionY + 40)); // Adjust the position as needed
@@ -55,8 +58,10 @@ public:
         return boundingBox.contains(mousePosition);
     }
     void singleClick() {
+        currentSelection = driveInfo.driveLetter;
         std::wcout << driveInfo.driveLetter << std::endl;
         std::wcout << currentDirectory;
+
     }
     void handleMouseClick(sf::Texture& file, sf::Texture& normalDrive, sf::Texture& folder, sf::Font& font, std::vector<ClickableElement>& clickableElements, int maxFoldersToShow = 6) {
         std::cout << "Changed!";
@@ -147,7 +152,7 @@ public:
                     else {
                         ClickableElement folderElement(file, font, folders[i], folderPos, positionY);
                         clickableElements.emplace_back(folderElement);
-
+                        
                     }
 
                 }
@@ -346,11 +351,11 @@ int main() {
     menuBar.setPosition(0, 0);
 
     // Create menu options
-    sf::Text fileOption("File", font, 15);
-    fileOption.setPosition(10, 10);
+   /* sf::Text fileOption("File", font, 15);
+    fileOption.setPosition(10, 10);*/
 
     sf::Text aboutOption("About", font, 15);
-    aboutOption.setPosition(70, 10);
+    aboutOption.setPosition(10, 10);
 
     // Creating toolbar
     sf::RectangleShape toolBar(sf::Vector2f(window.getSize().x, 60));
@@ -359,14 +364,18 @@ int main() {
 
     
     
-    sf::Text cutText("Cut", font, 15);
-    cutText.setPosition(70, 60);
+    sf::Text copyText("Copy", font, 15);
+    copyText.setPosition(250, 60);
     
     sf::Text pasteText("Paste", font, 15);
-    pasteText.setPosition(130, 60);
+    pasteText.setPosition(300, 60); 
+
+
+    sf::Text propertiesText("Properties", font, 15);
+    propertiesText.setPosition(70, 60);
 
     sf::Text newFolder("New Folder", font, 15);
-    newFolder.setPosition(190, 60);
+    newFolder.setPosition(160, 60);
     
 
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -419,11 +428,16 @@ int main() {
                 }
                 else {
                     sf::Vector2f mousePosition(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
-                    if (cutText.getGlobalBounds().contains(mousePosition)) {
+                    if (copyText.getGlobalBounds().contains(mousePosition)) {
                         if (!mouseClicked) {
-                            std::cout << "Cut clicked!" << std::endl;
+                            std::cout << "Copy clicked!" << std::endl;
+                            std::wstring fileToCopy = currentDirectory + L"\\" + currentSelection;
+                            copiedFilesData.push(fileToCopy);
+                            std::cout << "File Data Copied";
                             // Add your cut handling code here
                             mouseClicked = true;
+                            std::wstring frontElement = copiedFilesData.front();
+                            std::wcout << "Queue Front: " << frontElement << std::endl;
                         }
                     }
                     else if (backButtonText.getGlobalBounds().contains(mousePosition)) {
@@ -464,7 +478,19 @@ int main() {
                             std::cout << "Paste clicked!" << std::endl;
                             // Add your paste handling code here
                             mouseClicked = true;
+                            std::wstring fileToCopy = copiedFilesData.front();
+                            copiedFilesData.pop();
+                            std::wcout << "File to copy: " << fileToCopy << std::endl;
+                            std::wcout << "Current Directory: " << currentDirectory << std::endl;
+                            
+                            copyFiles(fileToCopy, currentDirectory);
                         }
+                    }
+                    else if (propertiesText.getGlobalBounds().contains(mousePosition)) {
+
+                        // Showing Properties alert
+                        showProperties(currentSelection, currentDirectory);
+
                     }
                     else if (aboutOption.getGlobalBounds().contains(mousePosition)) {
                         if (!mouseClicked) {
@@ -589,12 +615,13 @@ int main() {
 
         window.clear(sf::Color::White);
         window.draw(menuBar);
-        window.draw(fileOption);
+        //window.draw(fileOption);
         window.draw(aboutOption);
         window.draw(toolBar);
         window.draw(newFolder);
-        window.draw(cutText);
+        window.draw(copyText);
         window.draw(pasteText);
+        window.draw(propertiesText);
         window.draw(backButtonText);
         window.draw(currentDirectoryText);
        

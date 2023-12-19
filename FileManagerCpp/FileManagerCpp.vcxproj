@@ -134,6 +134,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="aboutAlert.cpp" />
+    <ClCompile Include="copyFiles.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="createNewFolder.cpp" />
     <ClCompile Include="getFoldersFromPath.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -143,6 +146,7 @@
     </ClCompile>
     <ClCompile Include="newFolderInput.cpp" />
     <ClCompile Include="openFile.cpp" />
+    <ClCompile Include="propertiesAlert.cpp" />
     <ClCompile Include="Source.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -151,12 +155,14 @@
     <Image Include="..\..\..\..\Downloads\BizzyKart\thisPc.png" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="copyFiles.h" />
     <ClInclude Include="createNewFolder.h" />
     <ClInclude Include="getFoldersFromPath.h" />
     <ClInclude Include="getLogicalDrives.h" />
     <ClInclude Include="newFolderInput.h" />
     <ClInclude Include="openFile.h" />
     <ClInclude Include="aboutAlert.h" />
+    <ClInclude Include="propertiesAlert.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

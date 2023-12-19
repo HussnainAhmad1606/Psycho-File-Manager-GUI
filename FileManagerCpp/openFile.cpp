@@ -21,13 +21,13 @@ void openFile(std::string fileName, std::string currentDirectory) {
         if (fileExtension == "mp4" || fileExtension == "MP4") {
             std::string command;
             if (currentDirectory.length() == 1) {
-           command = "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" \"" + currentDirectory  + ":\\" + fileName + "\"";
+                command = "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" \"" + currentDirectory + ":\\" + fileName + "\"";
             }
             else {
-           command = "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" \"" + currentDirectory  + "\\" + fileName + "\"";
+                command = "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" \"" + currentDirectory + "\\" + fileName + "\"";
 
             }
-           std:: cout << command;
+            std::cout << command;
             LPWSTR commandCharArray = new wchar_t[command.size() + 1];
             std::copy(command.begin(), command.end(), commandCharArray);
             commandCharArray[command.size()] = L'\0';
@@ -49,17 +49,66 @@ void openFile(std::string fileName, std::string currentDirectory) {
                 CloseHandle(pi.hThread);
 
                 std::cout << "VLC command executed successfully." << std::endl;
-               
+
             }
             else {
                 std::cerr << "VLC command failed to execute. Error code: " << GetLastError() << std::endl;
-                
+
             }
-           
+
         }
-    }
-    else {
-        std::cout << "File has no extension." << std::endl;
+        else if (fileExtension == "txt" || fileExtension == "TXT") {
+            std::string command;
+            if (currentDirectory.length() == 1) {
+                command = "\"C:\\Windows\\notepad.exe\" \"" + currentDirectory + ":\\" + fileName + "\"";
+            }
+            else {
+                command = "\"C:\\Windows\\notepad.exe\" \"" + currentDirectory + "\\" + fileName + "\"";
+
+            }
+            LPWSTR commandCharArray = new wchar_t[command.size() + 1];
+            std::copy(command.begin(), command.end(), commandCharArray);
+            commandCharArray[command.size()] = L'\0';
+            STARTUPINFO si;
+            PROCESS_INFORMATION pi;
+
+            // Set up the startup info structure
+            ZeroMemory(&si, sizeof(si));
+            si.cb = sizeof(si);
+            ZeroMemory(&pi, sizeof(pi));
+
+            // Create the process
+            if (CreateProcess(NULL, commandCharArray, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+                // Wait for the process to finish (optional)
+                WaitForSingleObject(pi.hProcess, INFINITE);
+
+                // Close process and thread handles
+                CloseHandle(pi.hProcess);
+                CloseHandle(pi.hThread);
+
+                std::cout << "Notepad executed successfully." << std::endl;
+
+            }
+        }
+         else if (fileExtension == "jpg" || fileExtension == "JPG") {
+            std::string command;
+            if (currentDirectory.length() == 1) {
+                command = "start \"\" \"" + currentDirectory + ":\\" + fileName + "\"";
+            }
+            else {
+                command = "start \"\" \"" + currentDirectory + "\\" + fileName + "\"";
+
+            }
+        
+            std::cout << "Image: " << command;
+            system(command.c_str());
+        }
+
+
+        else {
+            std::cout << "File has no extension." << std::endl;
+        }
+
     }
 
 }
