@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+// Header Files
 #include "getLogicalDrives.h"
 #include "getFoldersFromPath.h"
 #include "openFile.h"
@@ -12,11 +13,14 @@
 
 #include <locale>
 #include <codecvt>
+
 #include <queue>   
 #include <stack>
 std::stack<std::wstring> directories;
+
 std::wstring currentDirectory = L"";
 std::wstring currentSelection = L"";
+
 std::queue<std::wstring> copiedFilesData;
 class ClickableElement {
 

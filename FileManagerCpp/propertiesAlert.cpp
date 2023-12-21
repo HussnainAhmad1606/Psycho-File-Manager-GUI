@@ -34,7 +34,7 @@ void showProperties(std::wstring currentSelection, std::wstring currentDirectory
     HANDLE hFind = FindFirstFile(filePathPointer, &findFileData);
     std::wcout << filePathPointer;
     if (hFind == INVALID_HANDLE_VALUE) {
-        std::cerr << "Error: Unable to find file " << std::endl;
+        std::cerr << "Error: Unable to find file" << std::endl;
         return;
     }
     std::wcout << "File Properties for: " << filePath << std::endl;
