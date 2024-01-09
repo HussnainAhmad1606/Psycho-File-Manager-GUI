@@ -7,3 +7,7 @@ This is File Manager written in C++ as part of my Semester Project
 - See Details of files
 - Copy and Paste files
 - Can create new folder
+
+# DEMO
+![Logo](demo.PNG)
+
